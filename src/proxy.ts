@@ -16,5 +16,6 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/|favicon.ico).*)"],
+  // API calls and the socket pass through here in proxy mode. The backend authorizes those itself.
+  matcher: ["/((?!_next/|api/|socket\\.io|favicon.ico).*)"],
 };

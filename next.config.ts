@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const api = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+const api = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000").replace(/\/$/, "");
 
 /** Every screen is live, per-admin data fetched in the browser, so nothing here is cached on the server. */
 const nextConfig: NextConfig = {
@@ -15,6 +15,14 @@ const nextConfig: NextConfig = {
         as: "*.css",
       },
     },
+  },
+  async rewrites() {
+    if (process.env.NEXT_PUBLIC_API_PROXY !== "1") return [];
+    // Socket.IO's path gets its trailing slash back here, because Next would redirect a request that had one.
+    return [
+      { source: "/api/:path*", destination: `${api}/api/:path*` },
+      { source: "/socket.io", destination: `${api}/socket.io/` },
+    ];
   },
   async headers() {
     const connect = [api, api.replace(/^http/, "ws")].join(" ");

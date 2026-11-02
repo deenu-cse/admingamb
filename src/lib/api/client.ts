@@ -1,4 +1,9 @@
-export const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000").replace(/\/$/, "");
+/**
+ * NEXT_PUBLIC_API_PROXY=1 sends API calls through this site's own domain (see next.config.ts). Browsers
+ * refuse login cookies from an unrelated domain, so it is needed on vercel.app + onrender.com.
+ */
+export const API_PROXY = process.env.NEXT_PUBLIC_API_PROXY === "1";
+export const API_URL = API_PROXY ? "" : (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000").replace(/\/$/, "");
 
 export interface ApiMeta {
   requestId?: string;
@@ -72,7 +77,7 @@ async function refreshSession(): Promise<boolean> {
 }
 
 function buildUrl(path: string, query?: Query): string {
-  const url = new URL(`${API_URL}${path}`);
+  const url = new URL(`${API_URL}${path}`, API_PROXY ? window.location.origin : undefined);
   for (const [k, v] of Object.entries(query ?? {})) {
     if (v !== undefined && v !== null && v !== "") url.searchParams.set(k, String(v));
   }

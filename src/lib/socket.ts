@@ -1,6 +1,7 @@
 "use client";
 
 import { io, type ManagerOptions, type Socket, type SocketOptions } from "socket.io-client";
+import { API_PROXY } from "@/lib/api/client";
 import { useConnection } from "@/stores/connection";
 
 const SOCKET_URL = (process.env.NEXT_PUBLIC_SOCKET_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000").replace(/\/$/, "");
@@ -14,13 +15,22 @@ const common: Partial<ManagerOptions & SocketOptions> = {
   autoConnect: false,
 };
 
+/**
+ * In proxy mode the login cookies belong to this site, so the staff socket has to reach the API
+ * through it too. Rewrites can't carry WebSockets, so it polls. The public /live socket needs no
+ * cookie and stays a direct WebSocket.
+ */
+const staff: { base: string; options: Partial<ManagerOptions & SocketOptions> } = API_PROXY
+  ? { base: "", options: { ...common, transports: ["polling"], addTrailingSlash: false } }
+  : { base: SOCKET_URL, options: common };
+
 let admin: Socket | null = null;
 let live: Socket | null = null;
 
 /** Staff namespace: the bet feed and liability updates. */
 export function adminSocket(): Socket {
   if (admin) return admin;
-  admin = io(`${SOCKET_URL}/admin`, common);
+  admin = io(`${staff.base}/admin`, staff.options);
   const set = useConnection.getState().set;
   admin.on("connect", () => set({ state: "connected" }));
   admin.on("disconnect", (reason) => set({ state: reason === "io client disconnect" ? "offline" : "reconnecting" }));
