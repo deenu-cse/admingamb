@@ -1,0 +1,27 @@
+import type { Query } from "./api/client";
+
+export const qk = {
+  me: ["me"] as const,
+  overview: ["overview"] as const,
+  charts: (days: number) => ["overview", "charts", days] as const,
+  users: (q: Query) => ["users", "list", q] as const,
+  user: (id: string) => ["users", "detail", id] as const,
+  userLedger: (id: string) => ["users", "detail", id, "ledger"] as const,
+  userBets: (id: string) => ["users", "detail", id, "bets"] as const,
+  userSessions: (id: string) => ["users", "detail", id, "sessions"] as const,
+  userAudit: (id: string) => ["users", "detail", id, "audit"] as const,
+  matches: (q: Query) => ["matches", "list", q] as const,
+  match: (id: string) => ["matches", "detail", id] as const,
+  markets: (matchId: string) => ["matches", "detail", matchId, "markets"] as const,
+  pending: ["matches", "pending"] as const,
+  bets: (q: Query) => ["bets", q] as const,
+  risk: ["risk"] as const,
+  ledger: (q: Query) => ["ledger", q] as const,
+  reconRuns: ["reconciliation"] as const,
+  audit: (q: Query) => ["audit", "list", q] as const,
+  auditFilters: ["audit", "filters"] as const,
+  settings: ["settings"] as const,
+  replayScripts: ["replay", "scripts"] as const,
+  replaySessions: ["replay", "sessions"] as const,
+  health: ["health"] as const,
+};
